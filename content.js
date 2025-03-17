@@ -29,6 +29,9 @@ function removeBaiduAds() {
         items: []
     };
 
+    // 用于防止重复统计的Set
+    const processedElements = new Set();
+
     // 查找所有广告元素
     const findAdElements = () => {
         // 查找包含商业推广文本的元素和带有data-tuiguang属性的元素
@@ -52,13 +55,13 @@ function removeBaiduAds() {
         for (let i = 0; i < elements.snapshotLength; i++) {
             let element = elements.snapshotItem(i);
             let currentNode = element.nodeType === Node.TEXT_NODE ? element.parentNode : element;
+            let adElement = null;
 
-            // 向上遍历直到找到不是content_left的父元素
+            // 向上遍历直到找到广告容器
             while (currentNode && currentNode.parentNode) {
                 if (currentNode.parentNode.id === 'content_left') {
-                    // 如果直接父元素是content_left，只隐藏当前节点
-                    hideElement(currentNode);
-                    collectAdInfo(currentNode);
+                    // 如果直接父元素是content_left，当前节点就是广告容器
+                    adElement = currentNode;
                     break;
                 } else if (currentNode.id === 'content_left') {
                     // 如果当前节点是content_left，停止遍历
@@ -66,9 +69,15 @@ function removeBaiduAds() {
                 }
                 currentNode = currentNode.parentNode;
                 if (currentNode && currentNode.id !== 'content_left') {
-                    hideElement(currentNode);
-                    collectAdInfo(currentNode);
+                    adElement = currentNode;
                 }
+            }
+
+            // 如果找到了广告元素且未处理过
+            if (adElement && !processedElements.has(adElement)) {
+                processedElements.add(adElement);
+                hideElement(adElement);
+                collectAdInfo(adElement);
             }
         }
     };
@@ -86,7 +95,8 @@ function removeBaiduAds() {
     // 处理其他广告元素
     const elements = document.querySelectorAll(adSelectors.join(','));
     elements.forEach(element => {
-        if (!element.closest('#content_left')) {
+        if (!element.closest('#content_left') && !processedElements.has(element)) {
+            processedElements.add(element);
             hideElement(element);
             collectAdInfo(element);
         }
@@ -105,49 +115,63 @@ function collectAdInfo(element) {
     let adTitle = '';
     let adDescription = '';
 
-    // 尝试获取广告完整信息
-    if (element.tagName === 'A') {
-        adText = element.textContent.trim();
-        adUrl = element.href || element.getAttribute('data-landurl') || '';
-    } else {
-        // 尝试获取所有文本内容
-        const allText = element.textContent.trim();
-        
-        // 尝试获取链接
-        const links = element.querySelectorAll('a');
-        if (links.length > 0) {
-            // 获取第一个链接作为主要URL
-            adUrl = links[0].href || links[0].getAttribute('data-landurl') || '';
+    try {
+        // 尝试获取广告完整信息
+        if (element.tagName === 'A') {
+            adText = element.textContent.trim();
+            adUrl = element.href || element.getAttribute('data-landurl') || '';
+        } else {
+            // 尝试获取所有文本内容
+            const allText = element.textContent.trim();
             
-            // 收集所有链接文本
-            const linkTexts = Array.from(links).map(link => link.textContent.trim()).filter(Boolean);
-            if (linkTexts.length > 0) {
-                adTitle = linkTexts[0]; // 第一个链接通常是标题
+            // 尝试获取链接
+            const links = element.querySelectorAll('a');
+            if (links.length > 0) {
+                // 获取第一个链接作为主要URL
+                adUrl = links[0].href || links[0].getAttribute('data-landurl') || '';
+                
+                // 收集所有链接文本
+                const linkTexts = Array.from(links).map(link => link.textContent.trim()).filter(Boolean);
+                if (linkTexts.length > 0) {
+                    adTitle = linkTexts[0]; // 第一个链接通常是标题
+                }
+            }
+            
+            // 获取描述文本（排除链接文本后的其他文本）
+            const clone = element.cloneNode(true);
+            Array.from(clone.querySelectorAll('a')).forEach(a => a.remove());
+            adDescription = clone.textContent.trim();
+            
+            // 如果没有分离出标题和描述，就使用完整文本
+            if (!adTitle && !adDescription) {
+                adText = allText;
             }
         }
-        
-        // 获取描述文本（排除链接文本后的其他文本）
-        const clone = element.cloneNode(true);
-        Array.from(clone.querySelectorAll('a')).forEach(a => a.remove());
-        adDescription = clone.textContent.trim();
-        
-        // 如果没有分离出标题和描述，就使用完整文本
-        if (!adTitle && !adDescription) {
-            adText = allText;
-        }
-    }
 
-    // 只添加有效的广告信息
-    if (adText || adTitle || adDescription) {
-        adInfo.items.push({
-            title: adTitle || adText,
-            description: adDescription || '',
-            url: adUrl,
-            fullText: adText || `${adTitle} ${adDescription}`.trim(),
-            type: element.getAttribute('data-tuiguang') ? '商业推广' : '广告',
-            location: element.closest('#content_right') ? '右侧' : '主列表'
-        });
-        adInfo.count++;
+        // 只添加有效的广告信息
+        if (adText || adTitle || adDescription) {
+            // 生成唯一标识，用于去重
+            const adIdentifier = `${adTitle || adText}|${adUrl}`;
+            
+            // 检查是否已经添加过相同的广告
+            const isDuplicate = adInfo.items.some(item => 
+                `${item.title}|${item.url}` === adIdentifier
+            );
+
+            if (!isDuplicate) {
+                adInfo.items.push({
+                    title: adTitle || adText,
+                    description: adDescription || '',
+                    url: adUrl,
+                    fullText: adText || `${adTitle} ${adDescription}`.trim(),
+                    type: element.getAttribute('data-tuiguang') ? '商业推广' : '广告',
+                    location: element.closest('#content_right') ? '右侧' : '主列表'
+                });
+                adInfo.count++;
+            }
+        }
+    } catch (error) {
+        console.error('收集广告信息时出错:', error);
     }
 }
 
