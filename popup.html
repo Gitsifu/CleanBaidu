@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            width: 400px;
+            padding: 10px;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .status {
+            margin-left: 10px;
+            vertical-align: super;
+        }
+        .stats-container {
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .stats-count {
+            color: #2196F3;
+            font-weight: bold;
+        }
+        .ad-list {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 5px;
+            background: #fff;
+        }
+        .ad-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 13px;
+            line-height: 1.54;
+            position: relative;
+        }
+        .ad-item:hover {
+            background-color: #f8f8f8;
+        }
+        .ad-item:last-child {
+            border-bottom: none;
+        }
+        .ad-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            gap: 6px;
+        }
+        .ad-type {
+            font-size: 12px;
+            color: #f73131;
+            font-weight: normal;
+            border: 1px solid #f73131;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+        .ad-location {
+            font-size: 12px;
+            color: #666;
+            background: #f5f5f5;
+            padding: 1px 4px;
+            border-radius: 2px;
+        }
+        .ad-number {
+            font-size: 12px;
+            color: #999;
+            margin-left: auto;
+        }
+        .ad-title {
+            font-size: 16px;
+            margin-bottom: 4px;
+            color: #2440b3;
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: normal;
+            line-height: 1.6;
+        }
+        .ad-title:hover {
+            text-decoration: underline;
+            color: #315efb;
+        }
+        .ad-description {
+            color: #333;
+            margin-bottom: 4px;
+            line-height: 1.6;
+            font-size: 13px;
+        }
+        .ad-url {
+            color: #008000;
+            font-size: 13px;
+            word-break: break-all;
+            line-height: 1.6;
+        }
+        .no-ads {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+            font-style: italic;
+        }
+        .refresh-button {
+            background: none;
+            border: none;
+            color: #2196F3;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 20px;
+        }
+        .refresh-button:hover {
+            color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <h3>百度广告屏蔽侠</h3>
+    <label class="switch">
+        <input type="checkbox" id="adBlockToggle">
+        <span class="slider"></span>
+    </label>
+    <span class="status" id="statusText">已启用</span>
+
+    <div class="stats-container">
+        <div class="stats-header">
+            <span>已屏蔽广告 <span class="stats-count" id="adCount">0</span> 条</span>
+            <button class="refresh-button" id="refreshStats" title="刷新统计">🔄</button>
+        </div>
+        <div class="ad-list" id="adList">
+            <div class="no-ads">暂无广告被屏蔽</div>
+        </div>
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html> 

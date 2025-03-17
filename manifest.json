@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "百度广告屏蔽器",
+  "version": "1.0",
+  "description": "屏蔽百度搜索结果中的商业推广广告",
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": [
+    "*://*.baidu.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.baidu.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ],
+  "icons": {
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+} 
