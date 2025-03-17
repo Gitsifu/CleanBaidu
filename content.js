@@ -172,6 +172,13 @@ function showAllAds() {
             const originalDisplay = element.getAttribute('data-original-display');
             element.style.display = originalDisplay || '';
             element.removeAttribute('data-original-display');
+            
+            // 移除可能存在的内联样式
+            element.style.removeProperty('display');
+            element.style.removeProperty('visibility');
+            
+            // 移除可能添加的隐藏类
+            element.classList.remove('clean-baidu-hidden');
         }
     });
     hiddenElements.clear();
@@ -230,9 +237,11 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         isEnabled = request.enabled;
         if (isEnabled) {
             startObserver();
+            document.body.setAttribute('data-clean-baidu-enabled', 'true');
             removeBaiduAds();
         } else {
             stopObserver();
+            document.body.setAttribute('data-clean-baidu-enabled', 'false');
             showAllAds();
         }
         // 发送响应表示成功接收
@@ -246,6 +255,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
 // 页面加载完成后执行
 window.addEventListener('load', () => {
+    // 设置初始状态
+    document.body.setAttribute('data-clean-baidu-enabled', isEnabled ? 'true' : 'false');
+    
     if (isEnabled) {
         startObserver();
         removeBaiduAds();

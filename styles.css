@@ -1,24 +1,30 @@
 /* 隐藏广告元素 */
-.ec_tuiguang_pplink,
-.ec-pc_union_card,
-#content_right .ec-pc_union_card,
-.ec_wise_ad,
-[data-tuiguang],
-.ec-pl-container,
-#content_right [data-placeid],
-.ec-pc_union_wrapper {
+body[data-clean-baidu-enabled="true"] .ec_tuiguang_pplink,
+body[data-clean-baidu-enabled="true"] .ec-pc_union_card,
+body[data-clean-baidu-enabled="true"] #content_right .ec-pc_union_card,
+body[data-clean-baidu-enabled="true"] .ec_wise_ad,
+body[data-clean-baidu-enabled="true"] [data-tuiguang],
+body[data-clean-baidu-enabled="true"] .ec-pl-container,
+body[data-clean-baidu-enabled="true"] #content_right [data-placeid],
+body[data-clean-baidu-enabled="true"] .ec-pc_union_wrapper {
     display: none !important;
 }
 
 /* 移除广告占用的空间 */
-.result-op[data-click*="'rsv_srcid':'20811'"],
-.result-op[data-click*="'rsv_srcid':'16680'"] {
+body[data-clean-baidu-enabled="true"] .result-op[data-click*="'rsv_srcid':'20811'"],
+body[data-clean-baidu-enabled="true"] .result-op[data-click*="'rsv_srcid':'16680'"] {
     display: none !important;
 }
 
 /* 确保广告容器完全隐藏 */
-div[style*="visibility:visible"][data-placeid],
-div[style*="display:block"][data-placeid] {
+body[data-clean-baidu-enabled="true"] div[style*="visibility:visible"][data-placeid],
+body[data-clean-baidu-enabled="true"] div[style*="display:block"][data-placeid] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* 用于 JavaScript 控制的隐藏类 */
+.clean-baidu-hidden {
     display: none !important;
     visibility: hidden !important;
 } 
